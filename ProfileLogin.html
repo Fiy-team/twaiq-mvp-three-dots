@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شاشة الهوية - نظام أمن التحويلات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'absher-green': '#006C3A',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="absher-header">
+        <div class="container px-4">
+            <div class="logo">نظام أمن التحويلات (MVP)</div>
+        </div>
+    </div>
+
+    <div class="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+        <div class="w-full max-w-lg bg-white p-8 rounded-lg shadow-2xl border-t-8 border-purple-600">
+            <a href="index.html" class="text-gray-500 mb-4 block hover:underline text-sm"><i class="fas fa-arrow-right ml-1"></i> العودة لشاشة البدء</a>
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">اختر هويتك (المرسِل)</h2>
+            <p class="text-center text-gray-600 mb-8">اختر ملفاً تعريفياً لعرض بياناته الخاصة.</p>
+
+            <form id="profile-selection-form" class="space-y-6">
+                <div>
+                    <label for="profile-select" class="block text-sm font-medium text-gray-700 mb-2">الملف التعريفي</label>
+                    <select id="profile-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-600 focus:border-purple-600 shadow-sm">
+                        <option value="" disabled selected>-- اختر هوية --</option>
+                        </select>
+                </div>
+                
+                <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg font-bold hover:bg-purple-700 transition duration-200 shadow-md flex items-center justify-center">
+                    <i class="fas fa-sign-in-alt ml-2"></i> عرض ملف الهوية
+                </button>
+            </form>
+
+            <div class="mt-8 text-center border-t pt-4">
+                <p class="text-xs text-gray-500">ستعرض هذه الشاشة بيانات التحويل الخاصة بهذه الهوية فقط.</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // التأكد من استيراد الدالة الصحيحة من ملف البيانات
+        import { getAllProfiles } from './mockDatabase.js'; 
+
+        const form = document.getElementById('profile-selection-form');
+        const profileSelect = document.getElementById('profile-select');
+
+        function loadProfiles() {
+            try {
+                // هذا الجزء سيضمن أن الهوية الجديدة التي تم حفظها ستظهر هنا
+                const profiles = getAllProfiles();
+                profiles.forEach(profile => {
+                    const option = document.createElement('option');
+                    option.value = profile.profileId;
+                    option.textContent = `${profile.name} (${profile.profileId}) - حالة: ${profile.profileStatus}`;
+                    profileSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Failed to load profiles:", error);
+            }
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const selectedProfileId = profileSelect.value;
+            
+            if (selectedProfileId) {
+                // التوجيه إلى صفحة تفاصيل الهوية
+                window.location.href = `ProfileDetails.html?id=${selectedProfileId}`; 
+            } else {
+                alert('الرجاء اختيار ملف تعريفي.');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', loadProfiles);
+    </script>
+</body>
+</html>
