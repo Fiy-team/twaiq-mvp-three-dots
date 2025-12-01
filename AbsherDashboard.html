@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة القيادة الأمنية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'absher-green': '#006C3A',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="absher-header">
+        <div class="container px-4">
+            <div class="logo">لوحة القيادة الأمنية</div>
+            <a href="NewTransfer.html" class="new-tx-btn"><i class="fas fa-plus ml-1"></i> عملية جديدة</a>
+        </div>
+    </div>
+
+    <div class="container py-8">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" id="summary-cards">
+            <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-500">
+                <h3 class="text-lg font-semibold text-gray-500">إجمالي العمليات</h3>
+                <p class="text-3xl font-bold text-blue-700 mt-1" id="total-count">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-yellow-500">
+                <h3 class="text-lg font-semibold text-gray-500">قيد المراجعة (AI)</h3>
+                <p class="text-3xl font-bold text-yellow-700 mt-1" id="pending-count">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-red-500">
+                <h3 class="text-lg font-semibold text-gray-500">عمليات خطورة عالية</h3>
+                <p class="text-3xl font-bold text-red-700 mt-1" id="high-risk-count">0</p>
+            </div>
+        </div>
+
+        <div class="flex justify-between mb-6">
+             <a href="index.html" class="text-gray-500 font-bold py-2 px-6 rounded-lg hover:bg-gray-200 transition shadow-md flex items-center text-sm">
+                <i class="fas fa-arrow-right ml-2"></i> العودة لشاشة البدء
+            </a>
+            <button id="freeze-all-btn" class="bg-red-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-800 transition shadow-md flex items-center">
+                <i class="fas fa-snowflake ml-2"></i> تجميد جميع العمليات قيد المراجعة
+            </button>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-xl overflow-x-auto">
+            <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center"><i class="fas fa-list-ul ml-2"></i> العمليات الأخيرة</h2>
+            <table class="min-w-full text-right bg-white border">
+                <thead class="bg-gray-50 text-gray-700 uppercase text-xs">
+                    <tr>
+                        <th class="p-3 border">ID</th>
+                        <th class="p-3 border">هوية المرسل</th>
+                        <th class="p-3 border">المبلغ (SAR)</th>
+                        <th class="p-3 border">المستفيد</th>
+                        <th class="p-3 border">نوع التحويل</th>
+                        <th class="p-3 border">بلاغات المستفيد</th>
+                        <th class="p-3 border">الخطورة (%)</th>
+                        <th class="p-3 border">الحالة</th>
+                        <th class="p-3 border">الإجراء المقترح (AI)</th>
+                        <th class="p-3 border">التفاصيل</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y text-sm" id="transactions-table-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        // تأكد من المسار الصحيح
+        import { getAllTransactions, freezeAllTransactions } from './mockDatabase.js';
+
+        // دالة مساعدة لتحديد لون مستوى الخطورة
+        function getRiskColor(level) {
+            switch(level) {
+                case 'عالي جداً': return 'bg-red-600 text-white';
+                case 'عالي': return 'bg-red-500 text-white';
+                case 'متوسط': return 'bg-yellow-400 text-gray-800';
+                case 'آمن': return 'bg-green-500 text-white';
+                default: return 'bg-gray-400 text-white';
+            }
+        }
+        
+        // دالة مساعدة لتحديد لون حالة العملية
+        function getStatusColor(status) {
+            switch(status) {
+                case 'PENDING_AI': return 'bg-yellow-100 text-yellow-800';
+                case 'FROZEN': return 'bg-blue-100 text-blue-800';
+                case 'APPROVED': return 'bg-green-100 text-green-800';
+                case 'REJECTED': 
+                case 'REPORTED': return 'bg-red-100 text-red-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        // تحديث ملخص البطاقات في الأعلى
+        function updateSummary(total, pending, highRisk) {
+            document.getElementById('total-count').textContent = total;
+            document.getElementById('pending-count').textContent = pending;
+            document.getElementById('high-risk-count').textContent = highRisk;
+        }
+
+        // عرض بيانات العمليات في الجدول
+        function renderTransactions() {
+            const transactions = getAllTransactions();
+            const tbody = document.getElementById('transactions-table-body');
+            tbody.innerHTML = '';
+            
+            let pendingCount = 0;
+            let highRiskCount = 0;
+            
+            if (!transactions || transactions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-gray-500 font-bold">لا توجد عمليات حالياً. يرجى إضافة عملية جديدة.</td></tr>`;
+                updateSummary(0, 0, 0);
+                return;
+            }
+
+            transactions.sort((a, b) => new Date(b.time) - new Date(a.time)).forEach(tx => {
+                const riskColorClass = getRiskColor(tx.riskLevel);
+                const statusColorClass = getStatusColor(tx.status);
+
+                if (tx.status === 'PENDING_AI' || tx.status === 'FROZEN') {
+                    pendingCount++;
+                }
+                if (tx.riskLevel === 'عالي' || tx.riskLevel === 'عالي جداً') {
+                    highRiskCount++;
+                }
+                
+                // عرض عدد البلاغات باللون الأحمر إذا كان هناك بلاغات
+                const reportsDisplay = tx.reportsCount > 0 
+                    ? `<span class="text-red-700 font-bold">${tx.reportsCount} بلاغ</span>` 
+                    : `<span class="text-green-600 font-semibold">0</span>`;
+
+
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="p-3 border text-gray-800 font-mono">${tx.id}</td>
+                    <td class="p-3 border text-gray-700 font-semibold">${tx.profileId}</td>
+                    <td class="p-3 border font-bold">${tx.amount.toLocaleString()}</td>
+                    <td class="p-3 border text-gray-700">${tx.receiver}</td>
+                    <td class="p-3 border text-gray-600">${tx.type}</td>
+                    <td class="p-3 border text-center">${reportsDisplay}</td>
+                    <td class="p-3 border text-center">
+                        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full ${riskColorClass}">${tx.riskScore}% (${tx.riskLevel})</span>
+                    </td>
+                    <td class="p-3 border text-center">
+                        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full ${statusColorClass}">${tx.status}</span>
+                    </td>
+                    <td class="p-3 border text-sm text-blue-700 font-semibold">${tx.aiAction}</td>
+                    <td class="p-3 border text-center">
+                        <a href="TransferDetails.html?id=${tx.id}" class="text-absher-green hover:underline font-bold text-sm">عرض</a>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            updateSummary(transactions.length, pendingCount, highRiskCount);
+        }
+
+        // وظيفة تجميد العمليات
+        function setupFreezeButton() {
+            document.getElementById('freeze-all-btn').addEventListener('click', () => {
+                if (confirm('هل أنت متأكد من تجميد جميع العمليات قيد المراجعة حالياً؟')) {
+                    const count = freezeAllTransactions();
+                    alert(`تم تجميد ${count} عملية بنجاح!`);
+                    renderTransactions(); 
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTransactions();
+            setupFreezeButton();
+        });
+    </script>
+</body>
+</html>
