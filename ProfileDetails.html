@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملف الهوية - نظام أمن التحويلات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'absher-green': '#006C3A',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="absher-header">
+        <div class="container px-4">
+            <div class="logo">بيانات الهوية الخاصة</div>
+        </div>
+    </div>
+
+    <div class="container py-8">
+        <a href="ProfileLogin.html" class="text-gray-500 mb-6 block hover:underline text-sm"><i class="fas fa-arrow-right ml-1"></i> العودة لاختيار الهوية</a>
+        
+        <div class="bg-white p-6 rounded-lg shadow-xl border-t-4 border-purple-600 mb-8" id="profile-info-card">
+            <h2 class="text-2xl font-bold mb-4 text-purple-700 flex items-center"><i class="fas fa-user ml-2"></i> ملف الهوية: <span id="profile-name" class="mr-2">...</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                <div><span class="font-semibold">هوية المرسل (ID):</span> <span id="profile-id">...</span></div>
+                <div><span class="font-semibold">الحالة:</span> <span id="profile-status">...</span></div>
+                
+                <div><span class="font-semibold">متوسط التحويل الشهري:</span> <span id="avg-transfer">...</span> SAR</div>
+                <div class="md:col-span-2"><span class="font-semibold">آخر جهاز دخول:</span> <span id="last-device">...</span></div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-xl overflow-x-auto">
+            <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center"><i class="fas fa-history ml-2"></i> سجل العمليات الخاصة بهذه الهوية</h2>
+            <table class="min-w-full text-right bg-white border">
+                <thead class="bg-gray-50 text-gray-700 uppercase text-xs">
+                    <tr>
+                        <th class="p-3 border">ID</th>
+                        <th class="p-3 border">المبلغ (SAR)</th>
+                        <th class="p-3 border">المستفيد</th>
+                        <th class="p-3 border">نوع التحويل</th>
+                        <th class="p-3 border">تاريخ ووقت العملية</th>
+                        <th class="p-3 border">الخطورة (%)</th>
+                        <th class="p-3 border">الحالة</th>
+                        <th class="p-3 border">التفاصيل</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y text-sm" id="transactions-table-body">
+                    </tbody>
+            </table>
+            <p class="mt-4 text-center text-gray-500" id="no-transactions-message"></p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { getProfile, getProfileTransactions } from './mockDatabase.js';
+
+        function getStatusColor(status) {
+            switch(status) {
+                case 'PENDING_AI': return 'bg-yellow-100 text-yellow-800';
+                case 'FROZEN': return 'bg-blue-100 text-blue-800';
+                case 'APPROVED': return 'bg-green-100 text-green-800';
+                case 'REJECTED': 
+                case 'REPORTED': return 'bg-red-100 text-red-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+        
+        function getRiskColor(level) {
+            switch(level) {
+                case 'عالي جداً': return 'bg-red-600 text-white';
+                case 'عالي': return 'bg-red-500 text-white';
+                case 'متوسط': return 'bg-yellow-400 text-gray-800';
+                case 'آمن': return 'bg-green-500 text-white';
+                default: return 'bg-gray-400 text-white';
+            }
+        }
+
+        function loadProfileData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const profileId = urlParams.get('id');
+
+            if (!profileId) {
+                document.getElementById('profile-info-card').innerHTML = `<p class="text-red-500 font-bold">خطأ: لم يتم تحديد هوية المستخدم.</p>`;
+                return;
+            }
+
+            const profile = getProfile(profileId);
+            const transactions = getProfileTransactions(profileId);
+            
+            if (!profile) {
+                document.getElementById('profile-info-card').innerHTML = `<p class="text-red-500 font-bold">خطأ: الهوية رقم ${profileId} غير موجودة.</p>`;
+                return;
+            }
+
+            // عرض معلومات الهوية
+            document.getElementById('profile-name').textContent = profile.name;
+            document.getElementById('profile-id').textContent = profile.profileId;
+            document.getElementById('profile-status').textContent = profile.profileStatus;
+            
+            // تم حذف السطر الخاص بالهوية الوطنية هنا: document.getElementById('national-id').textContent = profile.nationalId;
+            
+            document.getElementById('avg-transfer').textContent = profile.avgMonthlyTransfer.toLocaleString();
+            document.getElementById('last-device').textContent = profile.lastLoginDevice;
+            
+            // عرض عمليات الهوية
+            const tbody = document.getElementById('transactions-table-body');
+            tbody.innerHTML = '';
+            
+            if (transactions.length === 0) {
+                document.getElementById('no-transactions-message').textContent = 'لم يتم العثور على أي عمليات تحويل لهذه الهوية.';
+                return;
+            }
+
+            transactions.sort((a, b) => new Date(b.time) - new Date(a.time)).forEach(tx => {
+                const riskColorClass = getRiskColor(tx.riskLevel);
+                const statusColorClass = getStatusColor(tx.status);
+
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="p-3 border text-gray-800 font-mono">${tx.id}</td>
+                    <td class="p-3 border font-bold">${tx.amount.toLocaleString()}</td>
+                    <td class="p-3 border text-gray-700">${tx.receiver}</td>
+                    <td class="p-3 border text-gray-600">${tx.type}</td>
+                    <td class="p-3 border text-sm text-gray-500">${new Date(tx.time).toLocaleString('ar-SA')}</td>
+                    <td class="p-3 border text-center">
+                        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full ${riskColorClass}">${tx.riskScore}%</span>
+                    </td>
+                    <td class="p-3 border text-center">
+                        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full ${statusColorClass}">${tx.status}</span>
+                    </td>
+                    <td class="p-3 border text-center">
+                        <a href="TransferDetails.html?id=${tx.id}" class="text-absher-green hover:underline font-bold text-sm">عرض</a>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProfileData);
+    </script>
+</body>
+</html>
