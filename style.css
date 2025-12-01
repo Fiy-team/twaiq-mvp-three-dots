@@ -1,0 +1,41 @@
+/* style.css - Absher Theme */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+
+:root {
+    --absher-green: #006C3A;
+    --absher-dark: #004D28;
+    --bg-color: #F8F9FA;
+    --text-color: #333;
+}
+
+body {
+    background-color: var(--bg-color);
+    font-family: 'Cairo', sans-serif;
+    color: var(--text-color);
+    margin: 0;
+    direction: rtl;
+}
+
+.container { max-width: 95%; margin: 0 auto; }
+.card-shadow { 
+    background: white; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+    border: 1px solid #e5e7eb;
+}
+
+/* Header */
+.absher-header { background-color: var(--absher-green); color: white; padding: 1rem 0; }
+.logo { font-size: 1.5rem; font-weight: 900; }
+
+/* Status Colors */
+.bg-safe { background-color: #10B981; }
+.bg-medium { background-color: #F59E0B; }
+.bg-high { background-color: #EF4444; }
+.text-safe { color: #10B981; }
+.text-medium { color: #F59E0B; }
+.text-high { color: #EF4444; }
+
+/* Buttons */
+.btn-action { transition: all 0.2s; }
+.btn-action:hover { transform: translateY(-1px); }
