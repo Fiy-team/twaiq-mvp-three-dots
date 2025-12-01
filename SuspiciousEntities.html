@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>قاعدة البيانات | الجهات المشبوهة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css"> 
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'absher-green': '#006C3A',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="absher-header">
+        <div class="container px-4">
+            <div class="logo">تحليل الجهات</div>
+        </div>
+    </div>
+    
+    <div class="container py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">قاعدة بيانات الجهات وعوامل الخطورة</h1>
+            <a href="AbsherDashboard.html" class="text-gray-500 hover:text-absher-green font-bold flex items-center">
+                <i class="fas fa-arrow-right ml-1"></i> العودة للوحة القيادة
+            </a>
+        </div>
+
+        <div class="card-shadow overflow-hidden bg-white">
+            <table class="w-full text-right">
+                <thead class="bg-gray-100 border-b text-gray-600 text-sm">
+                    <tr>
+                        <th class="p-4 w-1/4 text-right">الجهة المبلغ عنها</th>
+                        <th class="p-4 text-center">التقييم (Score)</th>
+                        <th class="p-4 text-right">الحالة (BLState)</th>
+                        <th class="p-4 w-1/3 text-right">
+                            <i class="fas fa-filter ml-1 text-absher-green"></i>
+                            عوامل التقييم (وقت، نوع، سجل)
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="entities-body" class="divide-y text-sm">
+                    <tr>
+                        <td colspan="4" class="p-4 text-center text-gray-500">جاري تحميل البيانات...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module" src="AbsherScriptEntities.js"></script>
+</body>
+</html>
