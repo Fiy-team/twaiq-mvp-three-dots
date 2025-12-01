@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شاشة البداية - نظام أمن التحويلات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'absher-green': '#006C3A',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="absher-header">
+        <div class="container px-4">
+            <div class="logo">درع الحماية المالية-(MVP)</div>
+        </div>
+    </div>
+
+    <div class="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+        <div class="w-full max-w-4xl p-8">
+            <h2 class="text-4xl font-extrabold text-gray-800 mb-10 text-center">اختر مسار العمل</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <a href="AbsherDashboard.html" class="block bg-white p-6 rounded-xl shadow-2xl hover:shadow-absher-green transition duration-300 border-t-8 border-absher-green text-center">
+                    <i class="fas fa-shield-alt text-6xl text-absher-green mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">لوحة التحكم الأمنية</h3>
+                    <p class="text-sm text-gray-600">عرض العمليات قيد المراجعة وإدارة المخاطر. (وصول عام للمدقق)</p>
+                </a>
+
+                <a href="profilelogin.html" class="block bg-white p-6 rounded-xl shadow-2xl hover:shadow-purple-600 transition duration-300 border-t-8 border-purple-600 text-center">
+                    <i class="fas fa-user-circle text-6xl text-purple-600 mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">تسجيل الدخول كـ (مُرسِل)</h3>
+                    <p class="text-sm text-gray-600">محاكاة دخول المستخدم لعرض تفاصيل حساب خاص.</p>
+                </a>
+
+                <a href="NewTransfer.html" class="block bg-white p-6 rounded-xl shadow-2xl hover:shadow-blue-600 transition duration-300 border-t-8 border-blue-600 text-center">
+                    <i class="fas fa-paper-plane text-6xl text-blue-600 mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">إضافة حوالة جديدة</h3>
+                    <p class="text-sm text-gray-600">محاكاة عملية تحويل لإرسالها للتحليل الفوري.</p>
+                </a>
+
+            </div>
+
+            <div class="mt-12 text-center pt-4">
+                <p class="text-xs text-gray-500">نظام أمن التحويلات - نموذج أولي تجريبي (MVP).</p>
+                <p class="text-xs text-gray-500">تم بواسطة فريق three dots  وهدفنا تطوير خدمات تطبيق ابشر و تقليل نسب الاحتيال في المملكة</p>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
