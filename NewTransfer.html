@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدخال تحويل جديد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'absher-green': '#006C3A',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="absher-header"><div class="container px-4"><div class="logo">إدخال تحويل</div></div></div>
+
+    <div class="container py-8 flex justify-center">
+        <div class="w-full max-w-3xl card-shadow p-8 bg-white border-t-4 border-purple-600">
+            <a href="index.html" class="text-gray-500 mb-4 block hover:underline text-sm"><i class="fas fa-arrow-right ml-1"></i> العودة للصفحة الرئيسية</a>
+
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                <i class="fas fa-cash-register ml-2 text-purple-600"></i> نموذج إدخال عملية تحويل جديدة
+            </h2>
+            
+            <form id="new-transfer-form" class="space-y-6">
+                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-md bg-gray-50">
+                    <div>
+                        <label for="profileId" class="block text-sm font-bold text-gray-700">هوية المرسل (UID-xxxx)</label>
+                        <input type="text" id="profileId" name="profileId" placeholder="مثال: UID-1001" class="mt-1 block w-full p-3 border rounded-md focus:ring-purple-500 focus:border-purple-500" required>
+                    </div>
+                    <div>
+                        <label for="amount" class="block text-sm font-bold text-gray-700">المبلغ (SAR)</label>
+                        <input type="number" id="amount" name="amount" placeholder="مثال: 35000" class="mt-1 block w-full p-3 border rounded-md focus:ring-purple-500 focus:border-purple-500" required min="1">
+                    </div>
+                    <div>
+                        <label for="date" class="block text-sm font-bold text-gray-700">التاريخ</label>
+                        <input type="date" id="date" name="date" class="mt-1 block w-full p-3 border rounded-md focus:ring-purple-500 focus:border-purple-500" required value="${new Date().toISOString().split('T')[0]}">
+                    </div>
+                    <div>
+                        <label for="time" class="block text-sm font-bold text-gray-700">الوقت</label>
+                        <input type="time" id="time" name="time" class="mt-1 block w-full p-3 border rounded-md focus:ring-purple-500 focus:border-purple-500" required value="${new Date().toTimeString().split(' ')[0].substring(0, 5)}">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="receiver" class="block text-sm font-bold text-gray-700">اسم/جهة المستفيد</label>
+                        <input type="text" id="receiver" name="receiver" placeholder="مثال: Crypto Wallet X" class="mt-1 block w-full p-3 border rounded-md focus:ring-purple-500 focus:border-purple-500" required>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="type" class="block text-sm font-bold text-gray-700">نوع العملية</label>
+                        <select id="type" name="type" class="mt-1 block w-full p-3 border rounded-md focus:ring-purple-500 focus:border-purple-500" required>
+                            <option value="تحويل محلي">تحويل محلي</option>
+                            <option value="سداد فواتير">سداد فواتير</option>
+                            <option value="حساب تجاري">حساب تجاري</option>
+                            <option value="تحويل دولي">تحويل دولي</option>
+                            <option value="محفظة رقمية">محفظة رقمية</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="border p-4 rounded-md border-red-200 bg-red-50">
+                    <h3 class="text-lg font-bold text-red-700 mb-4 flex items-center">
+                        <i class="fas fa-flag ml-2"></i> بيانات البلاغات السابقة على المستفيد
+                    </h3>
+                    <div id="reports-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        </div>
+                    <div class="mt-4 p-3 bg-red-100 rounded text-sm" id="reports-summary">
+                        <i class="fas fa-info-circle ml-1"></i> مجموع البلاغات المختارة: 0 بلاغ
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700 transition flex items-center justify-center mt-6">
+                    <i class="fas fa-paper-plane ml-2"></i> إرسال التحويل للتحليل الفوري
+                </button>
+            </form>
+            
+                        <div id="result-area" class="hidden mt-8 p-6 rounded-lg border-t-4 border-gray-200 bg-gray-50">
+                <h3 class="font-bold text-lg mb-3 text-gray-800 flex items-center">
+                    <i class="fas fa-tachometer-alt ml-2"></i> نتيجة التحليل الفوري (AI)
+                </h3>
+                <div class="space-y-2" id="result-content"></div>
+                <button id="view-dashboard-btn" class="mt-4 w-full bg-absher-green text-white py-2 rounded hover:bg-[#004d28] transition font-bold">
+                    <i class="fas fa-list-alt ml-1"></i> عرض في لوحة القيادة الأمنية
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+    // تأكد أن المسار هو ./mockDatabase.js
+    import { addTransaction, getProfile, addProfile, ReportTypes } from './mockDatabase.js';
+    // ...
+        const reportsGrid = document.getElementById('reports-grid');
+        const reportsSummary = document.getElementById('reports-summary');
+
+        function getLevelColor(level) {
+            switch(level) {
+                case 'عالي':
+                case 'عالي جداً': return 'bg-red-600 text-white';
+                case 'متوسط': return 'bg-yellow-500 text-gray-800';
+                case 'خفيف': return 'bg-green-500 text-white';
+                default: return 'bg-gray-400 text-white';
+            }
+        }
+
+        function renderReportOptions() {
+            reportsGrid.innerHTML = '';
+            
+            const sortedReports = [...ReportTypes].sort((a, b) => {
+                const order = { 'عالي': 3, 'متوسط': 2, 'خفيف': 1 };
+                return order[b.level] - order[a.level];
+            });
+
+            sortedReports.forEach(r => {
+                const colorClass = getLevelColor(r.level);
+                
+                const div = document.createElement('div');
+                div.className = 'p-3 border rounded-lg bg-white shadow-sm';
+                div.innerHTML = `
+                    <p class="font-bold text-sm mb-1 ${colorClass} inline-block px-2 py-0.5 rounded-full">${r.level}</p>
+                    <p class="text-sm text-gray-700 font-bold">${r.label}</p>
+                    <p class="text-xs text-gray-500 mb-2">القيمة: ${r.score} نقطة / بلاغ</p>
+                    <div class="flex items-center">
+                        <label for="report-${r.id}" class="text-xs text-gray-700 ml-2 whitespace-nowrap">عدد التكرارات (0-10):</label>
+                        <input type="number" id="report-${r.id}" data-report-id="${r.id}" data-report-score="${r.score}"
+                            class="w-full p-2 border rounded-md text-center text-sm font-bold focus:ring-purple-500 focus:border-purple-500"
+                            required min="0" value="0" max="10">
+                    </div>
+                `;
+                reportsGrid.appendChild(div);
+            });
+
+            reportsGrid.addEventListener('input', updateReportsSummary);
+        }
+
+        function updateReportsSummary() {
+            let totalCount = 0;
+            let totalScore = 0;
+            const inputs = reportsGrid.querySelectorAll('input[type="number"]');
+
+            inputs.forEach(input => {
+                const count = parseInt(input.value) || 0;
+                const score = parseInt(input.dataset.reportScore) || 0;
+                if (count > 0) {
+                    totalCount += count;
+                    totalScore += count * score;
+                }
+            });
+
+            reportsSummary.innerHTML = `
+                <i class="fas fa-info-circle ml-1"></i> 
+                مجموع البلاغات المختارة: <span class="font-bold">${totalCount} بلاغ</span>. 
+                نقاط الخطورة المضافة: <span class="font-bold">${totalScore} نقطة</span>.
+            `;
+        }
+
+        document.getElementById('new-transfer-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const reportsInputs = reportsGrid.querySelectorAll('input[type="number"]');
+            
+            const selectedReports = [];
+            reportsInputs.forEach(input => {
+                const count = parseInt(input.value) || 0;
+                if (count > 0) {
+                    selectedReports.push({
+                        id: input.dataset.reportId,
+                        count: count
+                    });
+                }
+            });
+
+            const data = {
+                profileId: form.profileId.value.trim(),
+                amount: form.amount.value,
+                receiver: form.receiver.value.trim(),
+                type: form.type.value,
+                date: form.date.value,
+                time: form.time.value,
+                reportsDataString: JSON.stringify(selectedReports), 
+            };
+
+            // **التأكد من إنشاء الهوية الجديدة (حل المشكلة الثانية)**
+            if (!getProfile(data.profileId)) {
+                if (confirm(`الحساب ${data.profileId} غير موجود. هل تريد إنشاء حساب جديد؟`)) {
+                    addProfile(data.profileId, `حساب تجريبي جديد: ${data.profileId}`);
+                } else {
+                    alert('تم إلغاء العملية لعدم وجود حساب مرسل.');
+                    return; 
+                }
+            }
+
+            const newTx = addTransaction(data);
+            
+            const resultArea = document.getElementById('result-area');
+            const resultContent = document.getElementById('result-content');
+
+            let statusColor = (newTx.status === 'PENDING_AI' || newTx.status === 'FROZEN') ? 'text-yellow-600' : 
+                            newTx.status === 'APPROVED' ? 'text-green-600' : 'text-red-600';
+
+            resultContent.innerHTML = `
+                <div class="flex justify-between border-b pb-1"><span>ID العملية</span><span class="font-bold">${newTx.id}</span></div>
+                <div class="flex justify-between border-b pb-1"><span>مستوى الخطورة</span><span class="font-bold text-red-500">${newTx.riskLevel} (${newTx.riskScore}%)</span></div>
+                <div class="flex justify-between border-b pb-1"><span>حالة العملية</span><span class="font-bold ${statusColor}">${newTx.status}</span></div>
+                <div class="flex justify-between pb-1"><span>الإجراء المقترح (AI)</span><span class="font-bold ${newTx.status !== 'APPROVED' ? 'text-red-500' : 'text-green-500'}">${newTx.aiAction}</span></div>
+                <p class="mt-4 text-sm font-semibold text-gray-700">التبرير: ${newTx.shortReason.ar}</p>
+            `;
+
+            document.getElementById('view-dashboard-btn').onclick = () => {
+                window.location.href = `TransferDetails.html?id=${newTx.id}`;
+            };
+            
+            resultArea.classList.remove('hidden');
+            alert(`تم إرسال عملية التحويل رقم ${newTx.id} للتحليل. النتيجة الفورية: ${newTx.status}.`);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderReportOptions();
+            updateReportsSummary();
+        });
+    </script>
+</body>
+</html>
+
+Absh
